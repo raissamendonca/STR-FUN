@@ -1,0 +1,24 @@
+WORD,FREQ,TOT_FUN,PC_FUN
+Decomposition,106,644,0.165
+Respiration,88,,0.137
+Primary Production,82,,0.127
+Enzyme Activity,61,,0.095
+Nutrient Transformation,27,,0.042
+Photosynthesis,17,,0.026
+Other,32,,0.05
+Microbial Activity,11,,0.017
+Nutrient Flux,7,,0.011
+Production,7,,0.011
+Secondary Production,7,,0.011
+,,TOT_STR,PC_STR
+Community Composition,225,629,0.358
+Biomass,98,,0.156
+Richness,38,,0.06
+Diversity,36,,0.057
+Abundance,35,,0.056
+Density,15,,0.024
+Other,28,,0.045
+Functional Diversity,12,,0.019
+Chlorophyll,7,,0.011
+Functional Feeding Group,5,,0.008
+Evenness,4,,0.006
