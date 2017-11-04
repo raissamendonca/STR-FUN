@@ -306,28 +306,28 @@ class.col=ifelse(col.fun==T,"deepskyblue4",
 class.pch=ifelse(col.fun==T,1,
                     ifelse(col.str==T,5,13))
 
-summary(lm(log(PCHANGE)~log(CONC_X)+PARAM_CLASS,water))
+summary(lm(PCHANGE~log(CONC_X),water))
 par(pin=c(3,3))
 plot(PCHANGE~CONC_X,water,pch=class.pch,col=class.col,ylim=c(0.01,10),xlim=c(10,1000),log="xy",xaxt="n", yaxt="n", lwd=2,cex=1.2,xlab=expression(paste("Copper concentration (µg L"^"-1",")")),ylab="Percent change (%)")
 logaxis(1,3,1)
 logaxis.b(-2,1,2)
 axis(2,at=c(0.01,0.1,1,10),labels=c(1,10,100,1000))
 
-text(850,10,labels="p = 0.31", cex=0.6)
+text(850,10,labels="p = 0.3", cex=0.6)
 
 par(xpd=T)
 legend(7.5,23,legend="Structural measures",pch=5,col="yellowgreen",lty=3,lwd=2,bty="n",cex=0.75,pt.cex=0.8)
 legend(100,23,legend="Functional measures",pch=1,col="deepskyblue4",lty=3,lwd=2,bty="n",cex=0.75,pt.cex=0.8)
 par(xpd=F)
 
-summary(lm(log(PCHANGE)~log(CONC_X)+PARAM_CLASS,soil))
+summary(lm(log(PCHANGE)~log(CONC_X),soil))
 plot(PCHANGE~CONC_X,soil,pch=class.pch,col=class.col,xlim=c(10,10000),ylim=c(0.01,10),log="xy",xaxt="n", yaxt="n",lwd=2,cex=1.2,xlab=expression(paste("Copper concentration (mg kg"^"-1",")")),ylab="Percent change (%)")
 logaxis(1,4,1)
 logaxis.b(-2,1,2)
 axis(2,at=c(0.01,0.1,1,10),labels=c(1,10,100,1000), tick = F)
 
-abline(lm(log10(PCHANGE)~log10(CONC_X),soil),col="darkgray",lwd=2,lty=3)
+abline(lm(log10(PCHANGE)~log10(CONC_X),soil),col="darkgray",lwd=2,lty=2)
 
-text(70,10,labels=expression(paste("Percent change (%) = e"^"0.29 * ln[Cu] - 2.77")),cex=0.6)
-text(7500,10, labels="p < 0.001", cex=0.6)
+text(70,10,labels=expression(paste("Percent change (%) = e"^"0.29 * ln[Cu] - 2.61")),cex=0.6)
+text(7300,10, labels="p < 0.001", cex=0.6)
 ```
