@@ -1,0 +1,268 @@
+---
+title: "UP data for meta-analysis stats"
+author: "Raissa Mendonca"
+date: "18 Apr 2018"
+output: html_document
+---
+
+UP data using low-binding and high-binding sediments in Big Pup Creek and Salmon Trout to measure:
+  
+  1) Biofilm colozination on NDS cups amended with Cu and Ni at different concentrations. NPP, chl*a*, and metal bioaccumulation measured after  4 weeks
+  2) Benthic invertebrate colonization on trays with the same metal amendments for 28 days. Inverts identified to family.
+  3) Cotton strip decomposition
+
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = TRUE)
+options(device=quartz)
+#options(device="RStudioGD")
+par(pin=c(2.5,2.5),las=1)
+```
+
+```{r Set WD, include=F}
+setwd("~/Documents/Kent State University/Costello Lab/GitHub/str-fun/UP_data")
+library(vegan)
+library(bootstrap)
+```
+
+```{r Graphing code, include=F}
+logaxis = function(minlog,maxlog,side){
+  pow <- seq(minlog,maxlog,by=1)
+  ticksat <- as.vector(sapply(pow, function(p) (1:10)*10^p))
+  axis(side, 10^pow, las=1, cex.axis=0.9)
+  axis(side, ticksat, labels=NA, tcl=-0.25, lwd=0, lwd.ticks=1)
+}
+
+logaxis.b = function(minlog,maxlog,side){
+  pow <- seq(minlog,maxlog,by=1)
+  ticksat <- as.vector(sapply(pow, function(p) (1:10)*10^p))
+  axis(side, 10^pow,labels=NA, las=1)
+  axis(side, ticksat, labels=NA, tcl=-0.25, lwd=0, lwd.ticks=1)
+}
+```
+
+```{r Load datasets, include=F}
+
+biof <- read.csv("biofilm_data_elementa.csv")
+    #Biofilm colonization on NDS cups, metal accum, chla and NPP
+  biof$TOTMe <- (biof$Sed_Cu/63.54)+(biof$Sed_Ni/58.69)
+    #Metal concentration variable as the sum of molar concentrations of both amended metals
+  
+  #Low-binding sediment
+  biof.LBBP <- subset(biof,biof$Sed=="LB"&biof$Site=="BP")
+  biof.LBST <- subset(biof,biof$Sed=="LB"&biof$Site=="ST")
+  #High-binding sediment
+  biof.HBBP <- subset(biof,biof$Sed=="HB"&biof$Site=="BP")
+  biof.HBST <- subset(biof,biof$Sed=="HB"&biof$Site=="ST")
+
+
+cott <- read.csv("cotton_data_elementa.csv")
+    #Cotton strip decomposition data
+  
+  #Low-binding sediment
+  cott.LBBP <- subset(cott,cott$Sed=="LB"&cott$Site=="BP")
+  cott.LBST <- subset(cott,cott$Sed=="LB"&cott$Site=="ST")
+  #High-binding sediment
+  cott.HBBP <- subset(cott,cott$Sed=="HB"&cott$Site=="BP")
+  cott.HBST <- subset(cott,cott$Sed=="HB"&cott$Site=="ST")
+  
+  
+bugs <- read.csv("benthic_data_elementa.csv") 
+    #Benthic invert family counts, total abund, richness, shannon div, inv simpson div and EPT abund
+  bugs$TOTMe <- (bugs$Sed_Cu/63.54)+(bugs$Sed_Ni/58.69) 
+    #Metal concentration variable as the sum of molar concentrations of both amended metals
+
+bugs.hel <- cbind(bugs[,c(1:7,56)], decostand(bugs[,8:50],"hellinger",na.rm=T))
+    #Hellinger transformation of invert count data to use in RDA
+  bugs.hel <- na.omit(bugs.hel) #Remove NA
+
+  #Low-binding sediment
+  bugs.LBBP <- subset(bugs.hel,bugs.hel$Sed=="LB"&bugs.hel$Site=="Big Pup")
+  bugs.LBST <- subset(bugs.hel,bugs.hel$Sed=="LB"&bugs.hel$Site=="Salmon-Trout")
+  #High-binding sediment
+  bugs.HBBP <- subset(bugs.hel,bugs.hel$Sed=="HB"&bugs.hel$Site=="Big Pup")
+  bugs.HBST <- subset(bugs.hel,bugs.hel$Sed=="HB"&bugs.hel$Site=="Salmon-Trout")
+```
+
+###1. Net primary production
+```{r Linear models for LB & HB NPP, echo=F, tidy=TRUE, results="hide"}
+
+  #Low-binding sediment
+
+    ##Big Pup
+npp.lbbp <- lm(NPP~log(TOTMe),data=biof.LBBP)
+  shapiro.test(resid(npp.lbbp)) #Ok
+  summary(npp.lbbp) #No significant effect of metals (p=0.935, R2<0.01)
+  
+    ##Salmon Trout
+npp.lbst <- lm(NPP~log(TOTMe),data=biof.LBST)
+  shapiro.test(resid(npp.lbst)) #Ok
+  summary(npp.lbst) #No significant effect of metals (p=0.739, R2<0.01)
+
+  
+  #High-binding sediment
+    
+    ##Big Pup
+npp.hbbp <- lm(NPP~log(TOTMe),data=biof.HBBP)
+  shapiro.test(resid(npp.hbbp)) #Ok
+  summary(npp.hbbp) #No significant effect of metals (p=0.398, R2=0.03)
+
+  
+    ##Salmon Trout
+npp.hbst <- lm(NPP~log(TOTMe),data=biof.HBST)
+  shapiro.test(resid(npp.hbst)) #Ok
+  summary(npp.hbst) #Significant effect of metals (p < 0.001, R2 = 0.60)
+
+```
+
+Log-linear models for NPP and sediment metal concentrations for low-binding and high-binding sediments
+
+####Low-binding sediments
+```{r Plots for LB NPP linear model, echo=F, tidy=TRUE, results="hide", fig.align='center'}
+par(pin=c(2.5,2.5),las=1, cex.axis=0.9, cex.lab=0.9, cex.main=0.9)
+
+plot(NPP~TOTMe,data=biof.LBBP,log="x",col="blue",xlim=c(1,10), xaxt="n", 
+     xlab=expression(paste("Sediment metal (µmol g"^"-1"," dw)")), ylim=c(-0.1,0.4))
+  points(NPP~TOTMe,data=biof.LBST,col="red", pch=6)
+  logaxis(0,1,1)
+  legend("topright",c("Big Pup Creek","Salmon Trout"), col=c("blue","red"), pch=c(1,6), cex=0.8)
+  title("Low-binding sediment")
+
+```
+
+|NPP Linear Model|Big Pup Creek||Salmon Trout||
+|:-:|:-:|:-:|:-:|:-:|
+| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
+| Total metal (µmol/g dw) | 0.935 | <0.01 | 0.739 | <0.01 |
+
+------
+
+####High-binding sediments
+```{r Plots for HB NPP linear models, echo=F, tidy=TRUE, results="hide", fig.align='center'}
+par(pin=c(2.5,2.5),las=1, cex.axis=0.9, cex.lab=0.9, cex.main=0.9)
+
+plot(NPP~TOTMe,data=biof.HBBP,log="x",col="blue",xlim=c(1,15), xaxt="n", 
+     xlab=expression(paste("Sediment metal (µmol g"^"-1"," dw)")), ylim=c(-0.1,0.4))
+  points(NPP~TOTMe,data=biof.HBST,col="red", pch=6)
+  logaxis(0,2,1)
+  legend("topright",c("Big Pup Creek","Salmon Trout"), col=c("blue","red"), pch=c(1,6), cex=0.8)
+  title("High-binding sediment")
+  abline(lm(NPP~log10(TOTMe),data=biof.HBST),col="red",lty=2)
+  
+```
+
+|NPP Linear Model|Big Pup Creek||Salmon Trout||
+|:--------------:|:---:|:-----:|:---:|:-----:|
+| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
+| Total metal (µmol/g dw) | 0.398 | 0.03 | **<0.001** | 0.60 |
+
+------
+
+
+###2. Benthic invertebrate community composition
+```{r RDA LB & HB models for benthic inverts, echo=F, tidy=TRUE, results="hide", fig.align='center'}
+
+  #Low-binding sediment
+
+    ##Big Pup
+rda.lbbp <- rda(bugs.LBBP[,9:51]~log(TOTMe),bugs.LBBP)
+  anova(rda.lbbp) #Model not significant (p=0.27)
+  summary(rda.lbbp) #R2=0.11
+
+    ##Salmon Trout
+rda.lbst <- rda(bugs.LBST[,9:51]~log(TOTMe),bugs.LBST)
+  anova(rda.lbst) #Model not significant (p=0.90)
+  summary(rda.lbst) #R2=0.05
+
+
+  #High-binding sediment
+  
+    ##Big Pup
+rda.hbbp <- rda(bugs.HBBP[,9:51]~log(TOTMe),bugs.HBBP)
+  anova(rda.hbbp) #Model not significant (p=0.26)
+  summary(rda.hbbp) #R2=0.11
+
+    ##Salmon Trout
+rda.hbst <- rda(bugs.HBST[,9:51]~log(TOTMe),bugs.HBST)
+  anova(rda.hbst) #Model not significant (p=0.50)
+  summary(rda.hbst) #R2=0.10
+
+```
+
+RDA models for benthic invertebrate community and sediment metal concentrations for low-binding and high-binding sediments
+
+####Low-binding sediments
+```{r RDA plots for LB, echo=F, tidy=TRUE, results="hide", fig.align='center'}
+par(pin=c(4,4),las=1, cex.axis=0.9, cex.lab=0.9, cex.main=0.9)
+
+col.rda=c("sienna1","springgreen3","blue","goldenrod")[bugs.LBBP$Nom_Treat] 
+    #Set colors based on metal treatments (ref, low, med, high)
+pt.rda=c(16,8,23,2)[bugs.LBBP$Nom_Treat] 
+    #Set points based on metal treatments (ref, low, med, high)
+
+
+    ##Big Pup
+plot(rda.lbbp,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1,1.1))
+  title("Big Pup Creek")
+  text(rda.lbbp,display="species",col=1,cex=0.9)
+  points(rda.lbbp,pch=pt.rda,col=col.rda,cex=1.1,lwd=2) # Points instead of text for sites
+  arrows(0,0,0.9,0, length=0.08, lwd=2)
+  text(0.85,0.09,"log(total metals)",lwd=2,cex=0.75,font=2)
+  legend("topright", c("Ref","Low","Med","High"), col=c("sienna1","springgreen3","blue","goldenrod"),
+         pch=c(16,8,23,2))
+  
+    ##Salmon Trout
+plot(rda.lbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.15,1.1), ylim=c(-1.1,1.1))
+  title("Salmon Trout")
+  text(rda.lbst,display="species",col=1,cex=0.9)
+  points(rda.lbst,pch=pt.rda,col=col.rda,cex=1.1,lwd=2) # Points instead of text for sites
+  arrows(0,0,0.8,0, length=0.08, lwd=2)
+  text(0.88,0.09,"log(total metals)",lwd=2,cex=0.75,font=2)  
+  legend("topright", c("Ref","Low","Med","High"), col=c("sienna1","springgreen3","blue","goldenrod"),
+         pch=c(16,8,23,2))
+```
+
+|Benthic invert RDA|Big Pup Creek||Salmon Trout||
+|:-:|:-:|:-:|:-:|:-:|
+| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
+| Total metal (µmol/g dw) | 0.27 | 0.11 | 0.90 | 0.05 |
+
+------
+
+####High-binding sediments
+```{r RDA plots for HB, echo=F, tidy=TRUE, results="hide", fig.align='center'}
+par(pin=c(4,4),las=1, cex.axis=0.9, cex.lab=0.9, cex.main=0.9)
+
+col.rda=c("sienna1","springgreen3","blue","goldenrod")[bugs.LBBP$Nom_Treat] 
+    #Set colors based on metal treatments (ref, low, med, high)
+pt.rda=c(16,8,23,2)[bugs.LBBP$Nom_Treat] 
+    #Set points based on metal treatments (ref, low, med, high)
+  
+
+    ##Big Pup
+plot(rda.hbbp,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1,1.1))
+  title("Big Pup Creek")
+  text(rda.hbbp,display="species",col=1,cex=0.9)
+  points(rda.hbbp,pch=pt.rda,col=col.rda,cex=1.1,lwd=2) # Points instead of text for sites
+  arrows(0,0,0.8,0, length=0.08, lwd=2)
+  text(0.85,0.09,"log(total metals)",lwd=2,cex=0.75,font=2)
+  legend("topright", c("Ref","Low","Med","High"), col=c("sienna1","springgreen3","blue","goldenrod"),
+         pch=c(16,8,23,2))
+  
+  ##Salmon Trout
+plot(rda.hbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1,1.1))
+  title("Salmon Trout")
+  text(rda.hbst,display="species",col=1,cex=0.9)
+  points(rda.hbst,pch=pt.rda,col=col.rda,cex=1.1,lwd=2) # Points instead of text for sites
+  arrows(0,0,0.9,0, length=0.08, lwd=2)
+  text(0.85,0.09,"log(total metals)",lwd=2,cex=0.75,font=2)
+  legend("topright", c("Ref","Low","Med","High"), col=c("sienna1","springgreen3","blue","goldenrod"),
+         pch=c(16,8,23,2))
+  
+```
+
+|Benthic invert RDA|Big Pup Creek||Salmon Trout||
+|:--------------:|:---:|:-----:|:---:|:-----:|
+| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
+| Total metal (µmol/g dw) | 0.26 | 0.11 | 0.50 | 0.10 |
+
+------
