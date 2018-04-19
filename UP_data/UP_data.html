@@ -268,6 +268,40 @@ $(document).ready(function () {
 <hr />
 </div>
 </div>
+<div id="calculating-standard-error-of-r2-based-on-solution-found-on-stats-exchange" class="section level3">
+<h3>3. Calculating standard error of R<sup>2</sup> based on solution found on <a href="https://stats.stackexchange.com/questions/175026/formula-for-95-confidence-interval-for-r2">Stats Exchange</a></h3>
+<pre class="r"><code># Function to calculate standard error of Rsqr
+SER2 &lt;- function(model) {
+    R2 &lt;- (summary(model))$r.squared
+    n &lt;- length(resid(model))
+    k &lt;- (model$rank) - 1
+    se &lt;- sqrt((4 * R2 * ((1 - R2)^2) * ((n - k - 1)^2))/((n^2 - 1) * (n + 3)))
+    R2.ci &lt;- round(data.frame(R2 - (abs(qt(0.05/2, n - 2)) * se), R2, R2 + (abs(qt(0.05/2, 
+        n - 2)) * se), se), digits = 3)
+    colnames(R2.ci) &lt;- c(&quot;Lower&quot;, &quot;R2&quot;, &quot;Upper&quot;, &quot;SE&quot;)
+    return(R2.ci)
+}
+
+SER2(npp.hbst)</code></pre>
+<pre><code>##   Lower    R2 Upper    SE
+## 1 0.376 0.602 0.828 0.109</code></pre>
+<pre class="r"><code># Bootstrapped R2 from regression with High-binding Salmon Trout data
+# (npp.hbst)
+library(boot)</code></pre>
+<pre><code>## 
+## Attaching package: 'boot'</code></pre>
+<pre><code>## The following object is masked from 'package:lattice':
+## 
+##     melanoma</code></pre>
+<pre class="r"><code>boot.R2 &lt;- boot(biof.HBST, function(data, indices) summary(lm(NPP ~ log(TOTMe), 
+    data[indices, ]))$r.squared, R = 10000)
+
+boot.R2$t0</code></pre>
+<pre><code>## [1] 0.6022804</code></pre>
+<pre class="r"><code>quantile(boot.R2$t, c(0.025, 0.975))</code></pre>
+<pre><code>##      2.5%     97.5% 
+## 0.3103768 0.7987052</code></pre>
+</div>
 
 
 

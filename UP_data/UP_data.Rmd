@@ -266,3 +266,29 @@ plot(rda.hbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1
 | Total metal (µmol/g dw) | 0.26 | 0.11 | 0.50 | 0.10 |
 
 ------
+
+
+###3. Calculating standard error of R<sup>2</sup> based on solution found on [Stats Exchange](https://stats.stackexchange.com/questions/175026/formula-for-95-confidence-interval-for-r2)
+```{r Rsqr std error function, tidy=TRUE}
+  #Function to calculate standard error of Rsqr
+SER2 <- function(model){
+      R2 <- (summary(model))$r.squared
+      n <- length(resid(model))
+      k <- (model$rank) - 1
+      se <- sqrt((4*R2*((1-R2)^2)*((n-k-1)^2))/((n^2-1)*(n+3)))
+      R2.ci <- round(data.frame(R2-(abs(qt(0.05/2, n-2))*se),R2,R2+(abs(qt(0.05/2, n-2))*se),se),digits=3)
+      colnames(R2.ci) <- c("Lower","R2","Upper","SE")
+      return(R2.ci)
+  }
+
+SER2(npp.hbst)
+
+  #Bootstrapped R2 from regression with High-binding Salmon Trout data (npp.hbst)
+library(boot)
+boot.R2 <- boot(biof.HBST,function(data,indices)
+            summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)
+
+boot.R2$t0
+quantile(boot.R2$t,c(0.025,0.975))
+```
+
