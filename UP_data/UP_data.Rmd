@@ -5,6 +5,9 @@ date: "18 Apr 2018"
 output: html_document
 ---
 
+<span style="color:blue">*Last update on `r format(Sys.Date(), "%d %b %Y")`*</span>  
+
+***
 UP data using low-binding and high-binding sediments in Big Pup Creek and Salmon Trout to measure:
   
   1) Biofilm colozination on NDS cups amended with Cu and Ni at different concentrations. NPP, chl*a*, and metal bioaccumulation measured after  4 weeks
@@ -18,10 +21,10 @@ options(device=quartz)
 par(pin=c(2.5,2.5),las=1)
 ```
 
-```{r Set WD, include=F}
+```{r Set WD & load libraries, include=F}
 setwd("~/Documents/Kent State University/Costello Lab/GitHub/str-fun/UP_data")
 library(vegan)
-library(bootstrap)
+library(boot)
 ```
 
 ```{r Graphing code, include=F}
@@ -129,10 +132,12 @@ plot(NPP~TOTMe,data=biof.LBBP,log="x",col="blue",xlim=c(1,10), xaxt="n",
 
 ```
 
-|NPP Linear Model|Big Pup Creek||Salmon Trout||
-|:-:|:-:|:-:|:-:|:-:|
-| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
-| Total metal (µmol/g dw) | 0.935 | <0.01 | 0.739 | <0.01 |
+*NPP SLRs*
+
+| Site | p-value | R<sup>2</sup> |
+|:-:|:-:|:-:|
+| Big Pup Creek | 0.935 | <0.01 | 
+| Salmon Trout | 0.739 | <0.01 |
 
 ------
 
@@ -150,10 +155,12 @@ plot(NPP~TOTMe,data=biof.HBBP,log="x",col="blue",xlim=c(1,15), xaxt="n",
   
 ```
 
-|NPP Linear Model|Big Pup Creek||Salmon Trout||
-|:--------------:|:---:|:-----:|:---:|:-----:|
-| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
-| Total metal (µmol/g dw) | 0.398 | 0.03 | **<0.001** | 0.60 |
+*NPP SLRs*
+
+| Site | p-value | R<sup>2</sup> |
+|:-:|:-:|:-:|
+| Big Pup Creek | 0.398 | 0.03 | 
+| Salmon Trout | **<0.001** | 0.60 |
 
 ------
 
@@ -221,10 +228,12 @@ plot(rda.lbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.15,1.1), ylim=c(-1.
          pch=c(16,8,23,2))
 ```
 
-|Benthic invert RDA|Big Pup Creek||Salmon Trout||
-|:-:|:-:|:-:|:-:|:-:|
-| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
-| Total metal (µmol/g dw) | 0.27 | 0.11 | 0.90 | 0.05 |
+*Benthic invert RDAs*
+
+| Site | p-value | R<sup>2</sup> |
+|:-:|:-:|:-:|
+| Big Pup Creek | 0.27 | 0.11 | 
+| Salmon Trout | 0.90 | 0.05 |
 
 ------
 
@@ -260,35 +269,72 @@ plot(rda.hbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1
   
 ```
 
-|Benthic invert RDA|Big Pup Creek||Salmon Trout||
-|:--------------:|:---:|:-----:|:---:|:-----:|
-| | p-value | R<sup>2</sup> | p-value | R<sup>2</sup> |
-| Total metal (µmol/g dw) | 0.26 | 0.11 | 0.50 | 0.10 |
+*Benthic invert RDAs*
+
+| Site | p-value | R<sup>2</sup> |
+|:-:|:-:|:-:|
+| Big Pup Creek | 0.26 | 0.11 | 
+| Salmon Trout |0.50 | 0.10 |
 
 ------
 
 
 ###3. Calculating standard error of R<sup>2</sup> based on solution found on [Stats Exchange](https://stats.stackexchange.com/questions/175026/formula-for-95-confidence-interval-for-r2)
-```{r Rsqr std error function, tidy=TRUE}
+```{r Rsqr std error function & lm bootstrap, tidy=TRUE}
   #Function to calculate standard error of Rsqr
 SER2 <- function(model){
       R2 <- (summary(model))$r.squared
       n <- length(resid(model))
       k <- (model$rank) - 1
       se <- sqrt((4*R2*((1-R2)^2)*((n-k-1)^2))/((n^2-1)*(n+3)))
-      R2.ci <- round(data.frame(R2-(abs(qt(0.05/2, n-2))*se),R2,R2+(abs(qt(0.05/2, n-2))*se),se),digits=3)
+      R2.ci <- round(data.frame(R2-(abs(qt(0.05/2, n-2))*se),
+                                R2,
+                                R2+(abs(qt(0.05/2, n-2))*se),
+                                se),
+                     digits=3)
       colnames(R2.ci) <- c("Lower","R2","Upper","SE")
       return(R2.ci)
   }
 
-SER2(npp.hbst)
+SER2(npp.hbbp)
 
-  #Bootstrapped R2 from regression with High-binding Salmon Trout data (npp.hbst)
-library(boot)
-boot.R2 <- boot(biof.HBST,function(data,indices)
-            summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)
-
-boot.R2$t0
-quantile(boot.R2$t,c(0.025,0.975))
+  #Bootstrapped R2 and confidence interval from regression
+set.seed(3)
+  boot.R2 <- boot(biof.LBBP,function(data,indices)
+              summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)
+  boot.R2$t0
+  quantile(boot.R2$t,c(0.025,0.975))
+  hist(boot.R2$t)
 ```
 
+```{r Rsqr RDA bootstrap, tidy=TRUE}
+  #Bootstrapped R2 and confidence interval from RDA
+set.seed(3)
+  boot.R2 <- boot(bugs.LBBP,function(data,indices)
+              RsquareAdj(rda(bugs.LBBP[,9:51]~log(TOTMe),data[indices,]))$r.squared, 
+              R=10000)
+  boot.R2$t0
+  quantile(boot.R2$t,c(0.025,0.975))
+  hist(boot.R2$t)
+
+```
+
+*NPP models*
+
+|Treatment| R<sup>2</sup> | SE | R<sup>2</sup> *boot* | SE |
+|:-:|:-:|:-:|:-:|:-:|
+| Low-binding Big Pup | 0.0003 | 0.007 | 0.0004 | ? |
+| Low-binding Salmon Trout | 0.005 | 0.025 | 0.005 | ? |
+| High-binding Big Pup | 0.033 | 0.062 | 0.033 | ? |
+| High-binding Salmon Trout | 0.602 | 0.109 | 0.602 | ? |
+
+--------
+
+*RDA models*
+
+|Treatment| R<sup>2</sup> *boot* | Lower | Upper |
+|:-:|:-:|:-:|:-:|
+| Low-binding Big Pup | 0.11 | 0.04 | 0.16 |
+| Low-binding Salmon Trout | 0.05 | 0.04 | 0.21 |
+| High-binding Big Pup | 0.11 | 0.04 | 0.18 |
+| High-binding Salmon Trout | 0.10 | 0.05 | 0.17 |
