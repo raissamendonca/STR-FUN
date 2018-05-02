@@ -284,9 +284,9 @@ plot(rda.hbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1
   #Function to calculate standard error of Rsqr
 SER2 <- function(model){
       R2 <- (summary(model))$r.squared
-      n <- length(resid(model))
-      k <- (model$rank) - 1
-      se <- sqrt((4*R2*((1-R2)^2)*((n-k-1)^2))/((n^2-1)*(n+3)))
+      k <- summary(model)$df[1]
+      n <- summary(model)$df[1]+summary(model)$df[2]
+      se <- sqrt(4*R2*(1-R2)^2*(n-k-1)^2/((n^2-1)*(n+3)))
       R2.ci <- round(data.frame(R2-(abs(qt(0.05/2, n-2))*se),
                                 R2,
                                 R2+(abs(qt(0.05/2, n-2))*se),
@@ -296,7 +296,7 @@ SER2 <- function(model){
       return(R2.ci)
   }
 
-SER2(npp.lbbp)
+SER2(npp.lbst)
 
   #Bootstrapped R2 and confidence interval from regression
 boot.R2 <- boot(biof.LBBP,function(data,indices)
@@ -307,7 +307,25 @@ boot.R2 <- boot(biof.LBBP,function(data,indices)
   
 ```
 
-```{r Rsqr RDA bootstrap, include=F, eval=F}
+```{r Rsqr std error function & RDA bootstrap, include=F, eval=F}
+  #Function to calculate standard error of Rsqr
+SER2.rda <- function(model){
+      RDA.R2 <- RsquareAdj(model)$r.squared
+      amod <- anova(model)
+      n <- amod[1]$Df[1]+amod[1]$Df[2]
+      k <- amod[1]$Df[1]
+      se <- sqrt((4*RDA.R2*((1-RDA.R2)^2)*((n-k-1)^2))/((n^2-1)*(n+3)))
+      RDA.R2.ci <- round(data.frame(RDA.R2-(abs(qt(0.05/2, n-2))*se),
+                                RDA.R2,
+                                RDA.R2+(abs(qt(0.05/2, n-2))*se),
+                                se),
+                     digits=3)
+      colnames(RDA.R2.ci) <- c("Lower","R2","Upper","SE")
+      return(RDA.R2.ci)
+  }
+
+SER2.rda(rda.hbbp)
+  
   #Bootstrapped R2 and confidence interval from RDA
 boot.R2 <- boot(bugs.LBBP,function(data,indices)
               RsquareAdj(rda(bugs.LBBP[,9:51]~log(TOTMe),data[indices,]))$r.squared, 
@@ -323,17 +341,17 @@ boot.R2 <- boot(bugs.LBBP,function(data,indices)
 |Treatment| R<sup>2</sup> | SE<sub>FORMULA</sub> | R<sup>2</sup> *boot* | SE<sub>BOOT</sub> |
 |:-:|:-:|:-:|:-:|:-:|
 | Low-binding Big Pup | 0.0004 | 0.007 | 0.0004 | 0.092 |
-| Low-binding Salmon Trout | 0.005 | 0.025 | 0.005 | 0.067 |
-| High-binding Big Pup | 0.033 | 0.062 | 0.033 | 0.075 |
-| High-binding Salmon Trout | 0.602 | 0.109 | 0.602 | 0.125 |
+| Low-binding Salmon Trout | 0.005 | 0.024 | 0.005 | 0.067 |
+| High-binding Big Pup | 0.033 | 0.059 | 0.033 | 0.075 |
+| High-binding Salmon Trout | 0.602 | 0.104 | 0.602 | 0.125 |
 
 --------
 
 *RDA models*
 
-|Treatment| R<sup>2</sup> *boot* | SE<sub>BOOT</sub> |
-|:-:|:-:|:-:|
-| Low-binding Big Pup | 0.107 | 0.030 | 
-| Low-binding Salmon Trout | 0.048 | 0.043 | 
-| High-binding Big Pup | 0.106 | 0.036 |
-| High-binding Salmon Trout | 0.097 | 0.032 |
+|Treatment| R<sup>2</sup> | SE<sub>FORMULA</sub> | R<sup>2</sup> *boot* | SE<sub>BOOT</sub> |
+|:-:|:-:|:-:|:-:|:-:|
+| Low-binding Big Pup | 0.107 | 0.128 | 0.107 | 0.030 | 
+| Low-binding Salmon Trout | 0.048 | 0.091 | 0.048 | 0.043 | 
+| High-binding Big Pup | 0.106 | 0.128 | 0.106 | 0.036 |
+| High-binding Salmon Trout | 0.097 | 0.125 | 0.097 | 0.032 |
