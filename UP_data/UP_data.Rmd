@@ -296,7 +296,7 @@ SER2 <- function(model){
       return(R2.ci)
   }
 
-SER2(npp.lbst)
+SER2(npp.lbbp)
 
   #Bootstrapped R2 and confidence interval from regression
 boot.R2 <- boot(biof.LBBP,function(data,indices)
@@ -333,6 +333,7 @@ boot.R2 <- boot(bugs.LBBP,function(data,indices)
   boot.R2
   boot.R2$t0
   quantile(boot.R2$t,c(0.025,0.975))
+  sd(boot.R2$t)
 
 ```
 
@@ -355,3 +356,34 @@ boot.R2 <- boot(bugs.LBBP,function(data,indices)
 | Low-binding Salmon Trout | 0.048 | 0.091 | 0.048 | 0.043 | 
 | High-binding Big Pup | 0.106 | 0.128 | 0.106 | 0.036 |
 | High-binding Salmon Trout | 0.097 | 0.125 | 0.097 | 0.032 |
+
+###4. Testing R<sup>2</sup> effect size using *metafor*
+```{r}
+  #Matrix with FUN R2, FUN SE formula, FUN SE bootstrap, STR R2, STR SE formula, STR SE bootstrap
+FUNmod <- list(npp.lbbp,npp.lbst,npp.hbbp,npp.hbst)
+STRmod <- list(rda.lbbp,rda.lbst,rda.hbbp,rda.hbst)
+FUNdat <- list(biof.LBBP,biof.LBST,biof.HBBP,biof.HBST) 
+STRdat <- list(bugs.LBBP,bugs.LBST,bugs.HBBP,bugs.HBST)
+
+r2.metafor <- matrix(NA, nrow=4, ncol=9, 
+                     dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
+                                     "High binding Big Pup","High-binding Salmon Trout"),
+                                   c("FUN R2","FUN SE form","FUN SE boot",
+                                     "STR R2","STR SE form","STR SE boot","R2 diff",
+                                     "SE form pooled","SE boot pooled")))
+
+  r2.metafor[1:4,1] <- t(sapply(FUNmod, function(x) RsquareAdj(x)$r.squared))
+  r2.metafor[1:4,2] <- t(sapply(FUNmod, function(x) SER2(x)$SE))
+  r2.metafor[1:4,3] <- t(sapply(FUNdat, function(x) sd(boot(x,function(data,indices)
+                        summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)$t)))
+  r2.metafor[1:4,4] <- t(sapply(STRmod, function(x) RsquareAdj(x)$r.squared))
+  r2.metafor[1:4,5] <- t(sapply(STRmod, function(x) SER2.rda(x)$SE))
+  r2.metafor[1:4,6] <- t(sapply(STRdat, function(x) sd(boot(x,function(data,indices)
+                        RsquareAdj(rda(x[,9:51]~log(TOTMe),data[indices,]))$r.squared, R=10000)$t)))
+  r2.metafor[1:4,7] <- r2.metafor[,1]-r2.metafor[,4]
+  r2.metafor[1:4,8] <- sqrt(r2.metafor[,2]+r2.metafor[,5])
+  r2.metafor[1:4,9] <- sqrt(r2.metafor[,3]+r2.metafor[,6])
+
+#Dave is the best advisor == T
+```
+
