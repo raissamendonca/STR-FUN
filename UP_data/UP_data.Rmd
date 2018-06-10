@@ -25,6 +25,7 @@ par(pin=c(2.5,2.5),las=1)
 setwd("~/Documents/Kent State University/Costello Lab/GitHub/str-fun/UP_data")
 library(vegan)
 library(boot)
+library(metafor)
 ```
 
 ```{r Graphing code, include=F}
@@ -358,13 +359,16 @@ boot.R2 <- boot(bugs.LBBP,function(data,indices)
 | High-binding Salmon Trout | 0.097 | 0.125 | 0.097 | 0.032 |
 
 ###4. Testing R<sup>2</sup> effect size using *metafor*
-```{r}
-  #Matrix with FUN R2, FUN SE formula, FUN SE bootstrap, STR R2, STR SE formula, STR SE bootstrap
+```{r Matrix with metafor variables}
+
+  #Models for FUN (lm) and STR (RDA)
 FUNmod <- list(npp.lbbp,npp.lbst,npp.hbbp,npp.hbst)
 STRmod <- list(rda.lbbp,rda.lbst,rda.hbbp,rda.hbst)
+  #Datasets for FUN and STR
 FUNdat <- list(biof.LBBP,biof.LBST,biof.HBBP,biof.HBST) 
 STRdat <- list(bugs.LBBP,bugs.LBST,bugs.HBBP,bugs.HBST)
 
+  #Matrix with FUN R2, FUN SE formula, FUN SE bootstrap, STR R2, STR SE formula, STR SE bootstrap
 r2.metafor <- matrix(NA, nrow=4, ncol=9, 
                      dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
                                      "High binding Big Pup","High-binding Salmon Trout"),
@@ -372,18 +376,29 @@ r2.metafor <- matrix(NA, nrow=4, ncol=9,
                                      "STR R2","STR SE form","STR SE boot","R2 diff",
                                      "SE form pooled","SE boot pooled")))
 
-  r2.metafor[1:4,1] <- t(sapply(FUNmod, function(x) RsquareAdj(x)$r.squared))
-  r2.metafor[1:4,2] <- t(sapply(FUNmod, function(x) SER2(x)$SE))
+  r2.metafor[1:4,1] <- t(sapply(FUNmod, function(x) RsquareAdj(x)$r.squared)) #FUN R2
+  r2.metafor[1:4,2] <- t(sapply(FUNmod, function(x) SER2(x)$SE)) #FUN SE formula
   r2.metafor[1:4,3] <- t(sapply(FUNdat, function(x) sd(boot(x,function(data,indices)
-                        summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)$t)))
-  r2.metafor[1:4,4] <- t(sapply(STRmod, function(x) RsquareAdj(x)$r.squared))
-  r2.metafor[1:4,5] <- t(sapply(STRmod, function(x) SER2.rda(x)$SE))
+                        summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)$t))) #FUN SE bootstrap
+  r2.metafor[1:4,4] <- t(sapply(STRmod, function(x) RsquareAdj(x)$r.squared)) #STR R2
+  r2.metafor[1:4,5] <- t(sapply(STRmod, function(x) SER2.rda(x)$SE)) #STR SE formula
   r2.metafor[1:4,6] <- t(sapply(STRdat, function(x) sd(boot(x,function(data,indices)
-                        RsquareAdj(rda(x[,9:51]~log(TOTMe),data[indices,]))$r.squared, R=10000)$t)))
-  r2.metafor[1:4,7] <- r2.metafor[,1]-r2.metafor[,4]
-  r2.metafor[1:4,8] <- sqrt(r2.metafor[,2]+r2.metafor[,5])
-  r2.metafor[1:4,9] <- sqrt(r2.metafor[,3]+r2.metafor[,6])
+                        RsquareAdj(rda(x[,9:51]~log(TOTMe),data[indices,]))$r.squared, R=10000)$t))) #STR SE bootstrap
+  r2.metafor[1:4,7] <- r2.metafor[,1]-r2.metafor[,4] #R2 diff as FUN-STR (i.e., if negative, FUN smaller than STR)
+  r2.metafor[1:4,8] <- sqrt(r2.metafor[,2]+r2.metafor[,5]) #Pooled SE formula as sqrt(SE1+SE2)
+  r2.metafor[1:4,9] <- sqrt(r2.metafor[,3]+r2.metafor[,6]) #Pooled SE bootstrap
 
+r2.metafor
+  
 #Dave is the best advisor == T
+```
+
+```{r Metafor analysis of R2 diff and pooled SE}
+  #Function 'rma.uni' used to fit fixed- and mixed-effects models via linear models in meta-analysis
+rma.uni(yi=as.vector(r2.metafor[,7]),sei=as.vector(r2.metafor[,8]))
+    
+    ###Need to explore more variables: weights, test, tau2 etc.
+    ###Function 'esccalc' also used to calculate effect sizes with custom formulas or built in common measures (e.g., log odds ratio)
+
 ```
 
