@@ -126,7 +126,7 @@ $(document).ready(function () {
 </div>
 
 
-<p><span style="color:blue"><em>Last update on 26 Apr 2018</em></span></p>
+<p><span style="color:blue"><em>Last update on 11 Jun 2018</em></span></p>
 <hr />
 <p>UP data using low-binding and high-binding sediments in Big Pup Creek and Salmon Trout to measure:</p>
 <ol style="list-style-type: decimal">
@@ -274,21 +274,21 @@ $(document).ready(function () {
 <tr class="even">
 <td align="center">Low-binding Salmon Trout</td>
 <td align="center">0.005</td>
-<td align="center">0.025</td>
+<td align="center">0.024</td>
 <td align="center">0.005</td>
 <td align="center">0.067</td>
 </tr>
 <tr class="odd">
 <td align="center">High-binding Big Pup</td>
 <td align="center">0.033</td>
-<td align="center">0.062</td>
+<td align="center">0.059</td>
 <td align="center">0.033</td>
 <td align="center">0.075</td>
 </tr>
 <tr class="even">
 <td align="center">High-binding Salmon Trout</td>
 <td align="center">0.602</td>
-<td align="center">0.109</td>
+<td align="center">0.104</td>
 <td align="center">0.602</td>
 <td align="center">0.125</td>
 </tr>
@@ -337,6 +337,42 @@ $(document).ready(function () {
 </tr>
 </tbody>
 </table>
+</div>
+<div id="testing-r2-effect-size-using-metafor" class="section level3">
+<h3>4. Testing R<sup>2</sup> effect size using <em>metafor</em></h3>
+<pre><code>##                                 FUN R2 FUN SE form FUN SE boot     STR R2
+## Low-binding Big Pup       0.0003598494       0.007  0.09410055 0.10696316
+## Low-binding Salmon Trout  0.0051516141       0.024  0.06841720 0.04765605
+## High binding Big Pup      0.0326112396       0.059  0.07500794 0.10636811
+## High-binding Salmon Trout 0.6022804213       0.104  0.12260067 0.09686701
+##                           STR SE form STR SE boot     R2 diff
+## Low-binding Big Pup             0.128  0.03100286 -0.10660331
+## Low-binding Salmon Trout        0.091  0.04235542 -0.04250443
+## High binding Big Pup            0.128  0.03644869 -0.07375687
+## High-binding Salmon Trout       0.125  0.03297276  0.50541341
+##                           SE form pooled SE boot pooled
+## Low-binding Big Pup            0.3674235      0.3536996
+## Low-binding Salmon Trout       0.3391165      0.3328252
+## High binding Big Pup           0.4324350      0.3338512
+## High-binding Salmon Trout      0.4785394      0.3944280</code></pre>
+<pre><code>## 
+## Random-Effects Model (k = 4; tau^2 estimator: REML)
+## 
+## tau^2 (estimated amount of total heterogeneity): 0 (SE = 0.1265)
+## tau (square root of estimated tau^2 value):      0
+## I^2 (total heterogeneity / total variability):   0.00%
+## H^2 (total variability / sampling variability):  1.00
+## 
+## Test for Heterogeneity: 
+## Q(df = 3) = 1.2279, p-val = 0.7463
+## 
+## Model Results:
+## 
+## estimate      se    zval    pval    ci.lb   ci.ub   
+##   0.0253  0.1968  0.1286  0.8977  -0.3604  0.4110   
+## 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 
 
