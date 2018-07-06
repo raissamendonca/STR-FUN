@@ -404,15 +404,19 @@ r2.metafor
 ```{r Metafor analysis of R2 diff and pooled SE, echo=F, tidy=T}
   #Function 'rma.uni' used to fit fixed- and mixed-effects models via linear models in meta-analysis
 base.boot <- rma.uni(r2.metafor$R2.diff,sei=r2.metafor$SE.boot.pooled,method="FE")
+summary.rma(base.boot)
 coef.summary.rma(summary.rma(base.boot))
-
-
-rma.uni(r2.metafor$R2.diff~r2.metafor$Stream,sei=r2.metafor$SE.boot.pooled)
-coef.summary.rma()
+weights(base.boot)
     ##yi can be written as formula (yi ~ mod1 + mod2 + mod3), which will override any 'mods'
 ```
 
-```{r}
+```{r Test with mock dataset in metafor, echo=F, tidy=T}
+mock.uni <- rma.uni(yi = R2dif~Fixed, sei = R2dif_SE, data = mock)
+summary.rma(mock.uni)
+coef.summary.rma(summary.rma(mock.uni))
+```
+
+```{r Comparison between book formula and rma() computed variables, echo=F, results=F}
 book.wt <- matrix(NA, nrow=4, ncol=8, 
                   dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
                                   "High binding Big Pup","High-binding Salmon Trout"),
@@ -429,6 +433,5 @@ for(i in 1:nrow(r2.metafor)) {
 }
 
 book.wt
-
 ```
 
