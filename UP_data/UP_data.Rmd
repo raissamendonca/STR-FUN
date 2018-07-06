@@ -85,6 +85,9 @@ bugs.hel <- cbind(bugs[,c(1:7,56)], decostand(bugs[,8:50],"hellinger",na.rm=T))
   #High-binding sediment
   bugs.HBBP <- subset(bugs.hel,bugs.hel$Sed=="HB"&bugs.hel$Site=="Big Pup")
   bugs.HBST <- subset(bugs.hel,bugs.hel$Sed=="HB"&bugs.hel$Site=="Salmon-Trout")
+  
+mock <- read.csv("mock_mixed.csv")
+  #Mock dataset to play with metafor package & functions // 1 fixed effect (habitat) and 1 random (study)
 ```
 
 ###1. Net primary production
@@ -93,7 +96,7 @@ bugs.hel <- cbind(bugs[,c(1:7,56)], decostand(bugs[,8:50],"hellinger",na.rm=T))
   #Low-binding sediment
 
     ##Big Pup
-npp.lbbp <- lm(NPP~log(TOTMe),data=biof.LBBP)
+npp.lbbp <- lm(NPP~log(TOTMe),data=biof.LBBP,na.action=na.omit)
   shapiro.test(resid(npp.lbbp)) #Ok
   summary(npp.lbbp) #No significant effect of metals (p=0.935, R2<0.01)
   
@@ -284,7 +287,7 @@ plot(rda.hbst,type="none",xlab="RDA1",ylab="PC1",xlim = c(-1.1,1.1), ylim=c(-1.1
 ```{r Rsqr std error function & lm bootstrap, include=F}
   #Function to calculate standard error of Rsqr
 SER2 <- function(model){
-      R2 <- (summary(model))$r.squared
+      R2 <- summary(model)$r.squared
       k <- summary(model)$df[1]
       n <- summary(model)$df[1]+summary(model)$df[2]
       se <- sqrt(4*R2*(1-R2)^2*(n-k-1)^2/((n^2-1)*(n+3)))
@@ -371,25 +374,28 @@ FUNdat <- list(biof.LBBP,biof.LBST,biof.HBBP,biof.HBST)
 STRdat <- list(bugs.LBBP,bugs.LBST,bugs.HBBP,bugs.HBST)
 
   #Matrix with FUN R2, FUN SE formula, FUN SE bootstrap, STR R2, STR SE formula, STR SE bootstrap
-r2.metafor <- matrix(NA, nrow=4, ncol=9, 
+r2.metafor <- data.frame(matrix(NA, nrow=4, ncol=12, 
                      dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
                                      "High binding Big Pup","High-binding Salmon Trout"),
                                    c("FUN R2","FUN SE form","FUN SE boot",
                                      "STR R2","STR SE form","STR SE boot","R2 diff",
-                                     "SE form pooled","SE boot pooled")))
+                                     "SE form pooled","SE boot pooled","Stream","Sed","Treat"))))
 
-  r2.metafor[1:4,1] <- t(sapply(FUNmod, function(x) RsquareAdj(x)$r.squared)) #FUN R2
-  r2.metafor[1:4,2] <- t(sapply(FUNmod, function(x) SER2(x)$SE)) #FUN SE formula
-  r2.metafor[1:4,3] <- t(sapply(FUNdat, function(x) sd(boot(x,function(data,indices)
-                        summary(lm(NPP~log(TOTMe),data[indices,]))$r.squared, R=10000)$t))) #FUN SE bootstrap
-  r2.metafor[1:4,4] <- t(sapply(STRmod, function(x) RsquareAdj(x)$r.squared)) #STR R2
-  r2.metafor[1:4,5] <- t(sapply(STRmod, function(x) SER2.rda(x)$SE)) #STR SE formula
-  r2.metafor[1:4,6] <- t(sapply(STRdat, function(x) sd(boot(x,function(data,indices)
-                        RsquareAdj(rda(x[,9:51]~log(TOTMe),data[indices,]))$r.squared, R=10000)$t))) #STR SE bootstrap
-  r2.metafor[1:4,7] <- r2.metafor[,1]-r2.metafor[,4] #R2 diff as FUN-STR (i.e., if negative, FUN smaller than STR)
-  r2.metafor[1:4,8] <- sqrt(r2.metafor[,2]+r2.metafor[,5]) #Pooled SE formula as sqrt(SE1+SE2)
-  r2.metafor[1:4,9] <- sqrt(r2.metafor[,3]+r2.metafor[,6]) #Pooled SE bootstrap
-
+  r2.metafor[1:4,1] <- sapply(FUNmod, function(x) RsquareAdj(x)$r.squared) #FUN R2
+  r2.metafor[1:4,2] <- sapply(FUNmod, function(x) SER2(x)$SE) #FUN SE formula
+  r2.metafor[1:4,3] <- sapply(FUNdat, function(x) sd(boot(x,function(data,indices)
+                        summary(lm(NPP~log(TOTMe),data[indices,],na.action=na.omit))$r.squared, R=10)$t)) #FUN SE bootstrap
+  r2.metafor[1:4,4] <- sapply(STRmod, function(x) RsquareAdj(x)$r.squared) #STR R2
+  r2.metafor[1:4,5] <- sapply(STRmod, function(x) SER2.rda(x)$SE) #STR SE formula
+  r2.metafor[1:4,6] <- sapply(STRdat, function(x) sd(boot(x,function(data,indices)
+                        RsquareAdj(rda(x[,9:51]~log(TOTMe),data[indices,]))$r.squared, R=10)$t)) #STR SE bootstrap
+  r2.metafor[1:4,7] <- r2.metafor$FUN.R2-r2.metafor$STR.R2 #R2 diff as FUN-STR (i.e., if negative, FUN smaller than STR)
+  r2.metafor[1:4,8] <- sqrt(r2.metafor$FUN.SE.form^2+r2.metafor$STR.SE.form^2) #Pooled SE formula as sqrt(SE1^2+SE2^2)
+  r2.metafor[1:4,9] <- sqrt(r2.metafor$FUN.SE.boot^2+r2.metafor$STR.SE.boot^2) #Pooled SE bootstrap
+  r2.metafor[1:4,10] <- as.character(c("Big Pup","Salmon Trout","Big Pup","Salmon Trout"))
+  r2.metafor[1:4,11] <- as.character(c("Low-bind","Low-bind","High-bind","High-bind"))
+  r2.metafor[1:4,12] <- as.character(c("LBBP","LBST","HBBP","HBST"))
+  
 r2.metafor
   
 #Dave is the best advisor == T
@@ -397,10 +403,32 @@ r2.metafor
 
 ```{r Metafor analysis of R2 diff and pooled SE, echo=F, tidy=T}
   #Function 'rma.uni' used to fit fixed- and mixed-effects models via linear models in meta-analysis
-rma.uni(yi=as.vector(r2.metafor[,7]),sei=as.vector(r2.metafor[,8]))
-    
-    ###Need to explore more variables: weights, test, tau2 etc.
-    ###Function 'esccalc' also used to calculate effect sizes with custom formulas or built in common measures (e.g., log odds ratio)
+base.boot <- rma.uni(r2.metafor$R2.diff,sei=r2.metafor$SE.boot.pooled,method="FE")
+coef.summary.rma(summary.rma(base.boot))
+
+
+rma.uni(r2.metafor$R2.diff~r2.metafor$Stream,sei=r2.metafor$SE.boot.pooled)
+coef.summary.rma()
+    ##yi can be written as formula (yi ~ mod1 + mod2 + mod3), which will override any 'mods'
+```
+
+```{r}
+book.wt <- matrix(NA, nrow=4, ncol=8, 
+                  dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
+                                  "High binding Big Pup","High-binding Salmon Trout"),
+                                c("BK Wt Effect Boot","BK Mean Wt Effect Boot",
+                                  "RMA Wt Effect Boot","RMA Mean Wt Effect Boot",
+                                  "BK Wt Effect Form","BK Mean Wt Effect Form",
+                                  "RMA Wt Effect Form","RMA Mean Wt Effect Form")))
+
+for(i in 1:nrow(r2.metafor)) {
+  book.wt[[i,1]] <- r2.metafor[i,"R2.diff"]*(1/r2.metafor[i,"SE.boot.pooled"])
+  book.wt[[i,2]] <- sum(r2.metafor[i,"R2.diff"]*(1/r2.metafor[i,"SE.boot.pooled"]))/sum(1/r2.metafor[i,"SE.boot.pooled"])
+  book.wt[[i,3]] <- coef.summary.rma(summary.rma(base.boot))$estimate
+  book.wt[[i,2]] <- sum(r2.metafor[i,"R2.diff"]*(1/r2.metafor[i,"SE.boot.pooled"]))/sum(1/r2.metafor[i,"SE.boot.pooled"])
+}
+
+book.wt
 
 ```
 
