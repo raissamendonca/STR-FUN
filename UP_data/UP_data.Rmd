@@ -411,9 +411,23 @@ weights(base.boot)
 ```
 
 ```{r Test with mock dataset in metafor, echo=F, tidy=T}
+  #Function to return all summaries for an rma model
+rma.sum <- function(model) {
+            sumList <- list(summary.rma(model),
+                            coef.summary.rma(summary.rma(model)),
+                            anova.rma(model))
+            names(sumList) <- c("summary.rma","coef.summary","anova.rma")
+            print(sumList)
+}
+
 mock.uni <- rma.uni(yi = R2dif~Fixed, sei = R2dif_SE, data = mock)
+rma.sum(mock.uni)
 summary.rma(mock.uni)
 coef.summary.rma(summary.rma(mock.uni))
+anova.rma(mock.uni)
+
+mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE, data=mock)
+summary.rma(mock.mv)
 ```
 
 ```{r Comparison between book formula and rma() computed variables, echo=F, results=F}
