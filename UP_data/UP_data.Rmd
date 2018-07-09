@@ -364,7 +364,7 @@ boot.R2 <- boot(bugs.LBBP,function(data,indices)
 --------
 
 ###4. Testing R<sup>2</sup> effect size using *metafor*
-```{r Matrix with metafor variables, echo=F, tidy=T}
+```{r Matrix with R2 variables for metafor, echo=F, tidy=T}
 
   #Models for FUN (lm) and STR (RDA)
 FUNmod <- list(npp.lbbp,npp.lbst,npp.hbbp,npp.hbst)
@@ -374,78 +374,68 @@ FUNdat <- list(biof.LBBP,biof.LBST,biof.HBBP,biof.HBST)
 STRdat <- list(bugs.LBBP,bugs.LBST,bugs.HBBP,bugs.HBST)
 
   #Matrix with FUN R2, FUN SE formula, FUN SE bootstrap, STR R2, STR SE formula, STR SE bootstrap
-r2.metafor <- data.frame(matrix(NA, nrow=4, ncol=12, 
+R2.sum <- data.frame(matrix(NA, nrow=4, ncol=12, 
                      dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
                                      "High binding Big Pup","High-binding Salmon Trout"),
                                    c("FUN R2","FUN SE form","FUN SE boot",
-                                     "STR R2","STR SE form","STR SE boot","R2 diff",
+                                     "STR R2","STR SE form","STR SE boot","R2 dif",
                                      "SE form pooled","SE boot pooled","Stream","Sed","Treat"))))
 
-  r2.metafor[1:4,1] <- sapply(FUNmod, function(x) RsquareAdj(x)$r.squared) #FUN R2
-  r2.metafor[1:4,2] <- sapply(FUNmod, function(x) SER2(x)$SE) #FUN SE formula
-  r2.metafor[1:4,3] <- sapply(FUNdat, function(x) sd(boot(x,function(data,indices)
+  R2.sum[1:4,1] <- sapply(FUNmod, function(x) RsquareAdj(x)$r.squared) #FUN R2
+  R2.sum[1:4,2] <- sapply(FUNmod, function(x) SER2(x)$SE) #FUN SE formula
+  R2.sum[1:4,3] <- sapply(FUNdat, function(x) sd(boot(x,function(data,indices)
                         summary(lm(NPP~log(TOTMe),data[indices,],na.action=na.omit))$r.squared, R=10)$t)) #FUN SE bootstrap
-  r2.metafor[1:4,4] <- sapply(STRmod, function(x) RsquareAdj(x)$r.squared) #STR R2
-  r2.metafor[1:4,5] <- sapply(STRmod, function(x) SER2.rda(x)$SE) #STR SE formula
-  r2.metafor[1:4,6] <- sapply(STRdat, function(x) sd(boot(x,function(data,indices)
+  R2.sum[1:4,4] <- sapply(STRmod, function(x) RsquareAdj(x)$r.squared) #STR R2
+  R2.sum[1:4,5] <- sapply(STRmod, function(x) SER2.rda(x)$SE) #STR SE formula
+  R2.sum[1:4,6] <- sapply(STRdat, function(x) sd(boot(x,function(data,indices)
                         RsquareAdj(rda(x[,9:51]~log(TOTMe),data[indices,]))$r.squared, R=10)$t)) #STR SE bootstrap
-  r2.metafor[1:4,7] <- r2.metafor$FUN.R2-r2.metafor$STR.R2 #R2 diff as FUN-STR (i.e., if negative, FUN smaller than STR)
-  r2.metafor[1:4,8] <- sqrt(r2.metafor$FUN.SE.form^2+r2.metafor$STR.SE.form^2) #Pooled SE formula as sqrt(SE1^2+SE2^2)
-  r2.metafor[1:4,9] <- sqrt(r2.metafor$FUN.SE.boot^2+r2.metafor$STR.SE.boot^2) #Pooled SE bootstrap
-  r2.metafor[1:4,10] <- as.character(c("Big Pup","Salmon Trout","Big Pup","Salmon Trout"))
-  r2.metafor[1:4,11] <- as.character(c("Low-bind","Low-bind","High-bind","High-bind"))
-  r2.metafor[1:4,12] <- as.character(c("LBBP","LBST","HBBP","HBST"))
+  R2.sum[1:4,7] <- R2.sum$FUN.R2-R2.sum$STR.R2 #R2 diff as FUN-STR (i.e., if negative, FUN smaller than STR)
+  R2.sum[1:4,8] <- sqrt(R2.sum$FUN.SE.form^2+R2.sum$STR.SE.form^2) #Pooled SE formula as sqrt(SE1^2+SE2^2)
+  R2.sum[1:4,9] <- sqrt(R2.sum$FUN.SE.boot^2+R2.sum$STR.SE.boot^2) #Pooled SE bootstrap
+  R2.sum[1:4,10] <- as.character(c("Big Pup","Salmon Trout","Big Pup","Salmon Trout"))
+  R2.sum[1:4,11] <- as.character(c("Low-bind","Low-bind","High-bind","High-bind"))
+  R2.sum[1:4,12] <- as.character(c("LBBP","LBST","HBBP","HBST"))
   
-r2.metafor
-  
+R2.sum <- cbind(round(R2.sum[,1:9],4),R2.sum[,10:12])
+R2.sum
+
 #Dave is the best advisor == T
 ```
 
-```{r Metafor analysis of R2 diff and pooled SE, echo=F, tidy=T}
-  #Function 'rma.uni' used to fit fixed- and mixed-effects models via linear models in meta-analysis
-base.boot <- rma.uni(r2.metafor$R2.diff,sei=r2.metafor$SE.boot.pooled,method="FE")
-summary.rma(base.boot)
-coef.summary.rma(summary.rma(base.boot))
-weights(base.boot)
-    ##yi can be written as formula (yi ~ mod1 + mod2 + mod3), which will override any 'mods'
-```
-
-```{r Test with mock dataset in metafor, echo=F, tidy=T}
-  #Function to return all summaries for an rma model
+```{r Metafor analysis of R2 dif and pooled SE, echo=F, tidy=T}
+  #Function to return selected summaries for an rma model
 rma.sum <- function(model) {
             sumList <- list(summary.rma(model),
-                            coef.summary.rma(summary.rma(model)),
-                            anova.rma(model))
-            names(sumList) <- c("summary.rma","coef.summary","anova.rma")
+                            round(coef.summary.rma(summary.rma(model)),4),
+                            anova.rma(model),
+                            round(weights(model),3))
+            names(sumList) <- c("summary.rma","coef.summary","anova.rma","weights")
             print(sumList)
 }
 
-mock.uni <- rma.uni(yi = R2dif~Fixed, sei = R2dif_SE, data = mock)
-rma.sum(mock.uni)
-summary.rma(mock.uni)
-coef.summary.rma(summary.rma(mock.uni))
-anova.rma(mock.uni)
+  #Function 'rma.uni' used to fit fixed- and mixed-effects models via linear models in metafor
+    ##Random effects in 'rma.uni' refers to the variance (tau^2) of the true effects/outcomes in a population of studies sampled from a larger collection of studies, assuming the population is a random sample of the larger collection
+    ##In mixed-effects (moderators included), tau^2 denotes teh amount of residual heterogeneity in the true effects/outcomes, which is the amount of variation not accounted for by the moderators included in the model
 
-mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE, data=mock)
-summary.rma(mock.mv)
+fixedboot <- rma.uni(yi=R2.dif, sei=SE.boot.pooled, data=R2.sum, method="FE")
+  rma.sum(fixedboot)
+randomboot <- rma.uni(yi=R2.dif, sei=SE.boot.pooled, data=R2.sum, method="REML")    
+  rma.sum(randomboot)
+mixedboot <- rma.uni(yi=R2.dif~Stream, sei=SE.boot.pooled, data=R2.sum, method="REML")
+  rma.sum(mixedboot)
+  ##yi can be written as formula (yi ~ mod1 + mod2 + mod3), which will override any 'mods'
+
 ```
 
-```{r Comparison between book formula and rma() computed variables, echo=F, results=F}
-book.wt <- matrix(NA, nrow=4, ncol=8, 
-                  dimnames=list(c("Low-binding Big Pup","Low-binding Salmon Trout",
-                                  "High binding Big Pup","High-binding Salmon Trout"),
-                                c("BK Wt Effect Boot","BK Mean Wt Effect Boot",
-                                  "RMA Wt Effect Boot","RMA Mean Wt Effect Boot",
-                                  "BK Wt Effect Form","BK Mean Wt Effect Form",
-                                  "RMA Wt Effect Form","RMA Mean Wt Effect Form")))
+```{r Test with mock dataset in metafor, echo=T, tidy=T}
+mock.uni <- rma.uni(yi = R2dif~Fixed, sei = R2dif_SE, data = mock)
+  rma.sum(mock.uni)
 
-for(i in 1:nrow(r2.metafor)) {
-  book.wt[[i,1]] <- r2.metafor[i,"R2.diff"]*(1/r2.metafor[i,"SE.boot.pooled"])
-  book.wt[[i,2]] <- sum(r2.metafor[i,"R2.diff"]*(1/r2.metafor[i,"SE.boot.pooled"]))/sum(1/r2.metafor[i,"SE.boot.pooled"])
-  book.wt[[i,3]] <- coef.summary.rma(summary.rma(base.boot))$estimate
-  book.wt[[i,2]] <- sum(r2.metafor[i,"R2.diff"]*(1/r2.metafor[i,"SE.boot.pooled"]))/sum(1/r2.metafor[i,"SE.boot.pooled"])
-}
+mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE^2, random= ~1|Study, data=mock)
+  rma.sum(mock.mv)
+```
 
-book.wt
+```{r Test of weighted linear regression with lme4, echo=T, tidy=T}
+
 ```
 
