@@ -440,5 +440,5 @@ mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE^2, random= ~1|Study, data=mock)
 ####*Calculating weighted linear regressions with lme() based on solution found on* [Stats Exchange](https://stats.stackexchange.com/questions/70425/weights-argument-in-lm-and-lme-very-different-in-r-am-i-using-them-correctly)
 ```{r Test of weighted linear regression with lme4, echo=T, tidy=T}
 mock.lme <- lme(R2dif~Fixed, random= ~1|Study, data=mock, weights= ~I(1/R2dif_SE))
-mock.lme
+summary(mock.lme)
 ```
