@@ -442,4 +442,3 @@ mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE^2, random= ~1|Study, data=mock)
 mock.lme <- lme(R2dif~Fixed, random= ~1|Study, data=mock, weights= ~I(1/R2dif_SE))
 mock.lme
 ```
-
