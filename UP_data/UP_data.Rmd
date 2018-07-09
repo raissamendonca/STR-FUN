@@ -26,6 +26,8 @@ setwd("~/Documents/Kent State University/Costello Lab/GitHub/str-fun/UP_data")
 library(vegan)
 library(boot)
 library(metafor)
+library(lme4)
+library(nlme)
 ```
 
 ```{r Graphing code, include=F}
@@ -436,6 +438,6 @@ mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE^2, random= ~1|Study, data=mock)
 ```
 
 ```{r Test of weighted linear regression with lme4, echo=T, tidy=T}
-
+mock.lme <- lme(R2dif~Fixed, random= ~1|Study, data=mock, weights= ~I(1/R2dif_SE))
 ```
 
