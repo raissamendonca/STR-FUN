@@ -342,113 +342,113 @@ $(document).ready(function () {
 <div id="testing-r2-effect-size-using-metafor" class="section level3">
 <h3>4. Testing R<sup>2</sup> effect size using <em>metafor</em></h3>
 <pre><code>##                           FUN.R2 FUN.SE.form FUN.SE.boot STR.R2
-## Low-binding Big Pup       0.0004       0.007      0.0820 0.1070
-## Low-binding Salmon Trout  0.0052       0.024      0.0878 0.0477
-## High binding Big Pup      0.0326       0.059      0.0744 0.1064
-## High-binding Salmon Trout 0.6023       0.104      0.0888 0.0969
+## Low-binding Big Pup       0.0004       0.007      0.0776 0.1070
+## Low-binding Salmon Trout  0.0052       0.024      0.0139 0.0477
+## High binding Big Pup      0.0326       0.059      0.1276 0.1064
+## High-binding Salmon Trout 0.6023       0.104      0.1241 0.0969
 ##                           STR.SE.form STR.SE.boot  R2.dif SE.form.pooled
-## Low-binding Big Pup             0.128      0.0323 -0.1066         0.1282
-## Low-binding Salmon Trout        0.091      0.0286 -0.0425         0.0941
-## High binding Big Pup            0.128      0.0561 -0.0738         0.1409
-## High-binding Salmon Trout       0.125      0.0254  0.5054         0.1626
+## Low-binding Big Pup             0.128      0.0283 -0.1066         0.1282
+## Low-binding Salmon Trout        0.091      0.0289 -0.0425         0.0941
+## High binding Big Pup            0.128      0.0258 -0.0738         0.1409
+## High-binding Salmon Trout       0.125      0.0173  0.5054         0.1626
 ##                           SE.boot.pooled       Stream       Sed Treat
-## Low-binding Big Pup               0.0881      Big Pup  Low-bind  LBBP
-## Low-binding Salmon Trout          0.0924 Salmon Trout  Low-bind  LBST
-## High binding Big Pup              0.0932      Big Pup High-bind  HBBP
-## High-binding Salmon Trout         0.0923 Salmon Trout High-bind  HBST</code></pre>
+## Low-binding Big Pup               0.0825      Big Pup  Low-bind  LBBP
+## Low-binding Salmon Trout          0.0321 Salmon Trout  Low-bind  LBST
+## High binding Big Pup              0.1302      Big Pup High-bind  HBBP
+## High-binding Salmon Trout         0.1253 Salmon Trout High-bind  HBST</code></pre>
 <pre><code>## $summary.rma
 ## 
 ## Fixed-Effects Model (k = 4)
 ## 
 ##   logLik  deviance       AIC       BIC      AICc  
-##  -9.1738   30.1294   20.3477   19.7340   22.3477  
+##  -3.2920   19.3316    8.5840    7.9703   10.5840  
 ## 
 ## Test for Heterogeneity: 
-## Q(df = 3) = 30.1294, p-val &lt; .0001
+## Q(df = 3) = 19.3316, p-val = 0.0002
 ## 
 ## Model Results:
 ## 
-## estimate      se    zval    pval    ci.lb   ci.ub   
-##   0.0671  0.0457  1.4682  0.1420  -0.0225  0.1567   
+## estimate      se     zval    pval    ci.lb   ci.ub   
+##  -0.0234  0.0284  -0.8255  0.4091  -0.0791  0.0322   
 ## 
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 ## 
 ## 
 ## $coef.summary
-##         estimate     se   zval  pval   ci.lb  ci.ub
-## intrcpt   0.0671 0.0457 1.4682 0.142 -0.0225 0.1567
+##         estimate     se    zval   pval   ci.lb  ci.ub
+## intrcpt  -0.0234 0.0284 -0.8255 0.4091 -0.0791 0.0322
 ## 
 ## $anova.rma
 ## 
 ## Test of Moderators (coefficient(s) 1): 
-## QM(df = 1) = 2.1557, p-val = 0.1420
+## QM(df = 1) = 0.6815, p-val = 0.4091
 ## 
 ## 
 ## $weights
 ##      1      2      3      4 
-## 26.927 24.479 24.061 24.532</code></pre>
+## 11.848 78.259  4.757  5.136</code></pre>
 <pre><code>## $summary.rma
 ## 
 ## Random-Effects Model (k = 4; tau^2 estimator: REML)
 ## 
 ##   logLik  deviance       AIC       BIC      AICc  
-##  -0.5527    1.1054    5.1054    3.3026   17.1054  
+##  -0.4809    0.9617    4.9617    3.1590   16.9617  
 ## 
-## tau^2 (estimated amount of total heterogeneity): 0.0762 (SE = 0.0691)
-## tau (square root of estimated tau^2 value):      0.2760
-## I^2 (total heterogeneity / total variability):   90.11%
-## H^2 (total variability / sampling variability):  10.11
+## tau^2 (estimated amount of total heterogeneity): 0.0666 (SE = 0.0622)
+## tau (square root of estimated tau^2 value):      0.2581
+## I^2 (total heterogeneity / total variability):   91.03%
+## H^2 (total variability / sampling variability):  11.15
 ## 
 ## Test for Heterogeneity: 
-## Q(df = 3) = 30.1294, p-val &lt; .0001
+## Q(df = 3) = 19.3316, p-val = 0.0002
 ## 
 ## Model Results:
 ## 
 ## estimate      se    zval    pval    ci.lb   ci.ub   
-##   0.0703  0.1454  0.4835  0.6287  -0.2147  0.3553   
+##   0.0605  0.1380  0.4383  0.6612  -0.2100  0.3310   
 ## 
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 ## 
 ## 
 ## $coef.summary
-##         estimate     se   zval   pval   ci.lb  ci.ub
-## intrcpt   0.0703 0.1454 0.4835 0.6287 -0.2147 0.3553
+##         estimate    se   zval   pval ci.lb ci.ub
+## intrcpt   0.0605 0.138 0.4383 0.6612 -0.21 0.331
 ## 
 ## $anova.rma
 ## 
 ## Test of Moderators (coefficient(s) 1): 
-## QM(df = 1) = 0.2338, p-val = 0.6287
+## QM(df = 1) = 0.1921, p-val = 0.6612
 ## 
 ## 
 ## $weights
 ##      1      2      3      4 
-## 25.183 24.952 24.908 24.957</code></pre>
+## 25.934 28.148 22.786 23.132</code></pre>
 <pre><code>## $summary.rma
 ## 
 ## Mixed-Effects Model (k = 4; tau^2 estimator: REML)
 ## 
 ##   logLik  deviance       AIC       BIC      AICc  
-##  -0.2498    0.4996    6.4996    2.5791   30.4996  
+##  -0.2742    0.5485    6.5485    2.6279   30.5485  
 ## 
-## tau^2 (estimated amount of residual heterogeneity):     0.0666 (SE = 0.0750)
-## tau (square root of estimated tau^2 value):             0.2581
-## I^2 (residual heterogeneity / unaccounted variability): 88.84%
-## H^2 (unaccounted variability / sampling variability):   8.96
-## R^2 (amount of heterogeneity accounted for):            12.54%
+## tau^2 (estimated amount of residual heterogeneity):     0.0686 (SE = 0.0787)
+## tau (square root of estimated tau^2 value):             0.2619
+## I^2 (residual heterogeneity / unaccounted variability): 87.48%
+## H^2 (unaccounted variability / sampling variability):   7.99
+## R^2 (amount of heterogeneity accounted for):            0.00%
 ## 
 ## Test for Residual Heterogeneity: 
-## QE(df = 2) = 17.6648, p-val = 0.0001
+## QE(df = 2) = 17.9882, p-val = 0.0001
 ## 
 ## Test of Moderators (coefficient(s) 2): 
-## QM(df = 1) = 1.3804, p-val = 0.2400
+## QM(df = 1) = 1.1245, p-val = 0.2890
 ## 
 ## Model Results:
 ## 
 ##                     estimate      se     zval    pval    ci.lb   ci.ub   
-## intrcpt              -0.0903  0.1935  -0.4668  0.6407  -0.4695  0.2889   
-## StreamSalmon Trout    0.3218  0.2739   1.1749  0.2400  -0.2150  0.8586   
+## intrcpt              -0.0912  0.2002  -0.4557  0.6486  -0.4836  0.3012   
+## StreamSalmon Trout    0.2966  0.2797   1.0604  0.2890  -0.2516  0.8447   
 ## 
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
@@ -456,18 +456,18 @@ $(document).ready(function () {
 ## 
 ## $coef.summary
 ##                    estimate     se    zval   pval   ci.lb  ci.ub
-## intrcpt             -0.0903 0.1935 -0.4668 0.6407 -0.4695 0.2889
-## StreamSalmon Trout   0.3218 0.2739  1.1749 0.2400 -0.2150 0.8586
+## intrcpt             -0.0912 0.2002 -0.4557 0.6486 -0.4836 0.3012
+## StreamSalmon Trout   0.2966 0.2797  1.0604 0.2890 -0.2516 0.8447
 ## 
 ## $anova.rma
 ## 
 ## Test of Moderators (coefficient(s) 2): 
-## QM(df = 1) = 1.3804, p-val = 0.2400
+## QM(df = 1) = 1.1245, p-val = 0.2890
 ## 
 ## 
 ## $weights
 ##      1      2      3      4 
-## 25.206 24.946 24.897 24.952</code></pre>
+## 25.914 28.064 22.841 23.181</code></pre>
 <pre class="r"><code>mock.uni &lt;- rma.uni(yi = R2dif ~ Fixed, sei = R2dif_SE, data = mock)
 rma.sum(mock.uni)</code></pre>
 <pre><code>## $summary.rma
@@ -569,6 +569,28 @@ rma.sum(mock.mv)</code></pre>
 ##  3.643  1.532  0.898  5.227 23.294  3.830  4.472 11.582  4.787 15.257 
 ##     21     22     23     24 
 ##  0.826  0.988  1.043  0.798</code></pre>
+<div id="calculating-weighted-linear-regressions-with-lme-based-on-solution-found-on-stats-exchange" class="section level4">
+<h4><em>Calculating weighted linear regressions with lme() based on solution found on</em> <a href="https://stats.stackexchange.com/questions/70425/weights-argument-in-lm-and-lme-very-different-in-r-am-i-using-them-correctly">Stats Exchange</a></h4>
+<pre class="r"><code>mock.lme &lt;- lme(R2dif ~ Fixed, random = ~1 | Study, data = mock, weights = ~I(1/R2dif_SE))
+mock.lme</code></pre>
+<pre><code>## Linear mixed-effects model fit by REML
+##   Data: mock 
+##   Log-restricted-likelihood: 25.94127
+##   Fixed: R2dif ~ Fixed 
+##  (Intercept)  Fixedstream Fixedwetland 
+##  0.140118494  0.002098179  0.028268825 
+## 
+## Random effects:
+##  Formula: ~1 | Study
+##         (Intercept)   Residual
+## StdDev:   0.1685221 0.01220512
+## 
+## Variance function:
+##  Structure: fixed weights
+##  Formula: ~I(1/R2dif_SE) 
+## Number of Observations: 24
+## Number of Groups: 9</code></pre>
+</div>
 </div>
 
 
