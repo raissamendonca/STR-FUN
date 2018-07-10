@@ -366,7 +366,9 @@ boot.R2 <- boot(bugs.LBBP,function(data,indices)
 --------
 
 ###4. Testing R<sup>2</sup> effect size using *metafor*
-```{r Matrix with R2 variables for metafor, echo=F, tidy=T}
+
+####<span style="color:red">*UP Data*</span>
+```{r Matrix with R2 UP data variables for metafor, echo=F, tidy=T}
 
   #Models for FUN (lm) and STR (RDA)
 FUNmod <- list(npp.lbbp,npp.lbst,npp.hbbp,npp.hbst)
@@ -404,8 +406,8 @@ R2.sum
 #Dave is the best advisor == T
 ```
 
-```{r Metafor analysis of R2 dif and pooled SE, echo=F, tidy=T}
-  #Function to return selected summaries for an rma model
+```{r Metafor analysis of UP data R2 dif and pooled SE, echo=T, tidy=T}
+  #Function to return selected summaries for an rma model and plots for rma.uni objects
 rma.sum <- function(model) {
             sumList <- list(summary.rma(model),
                             round(coef.summary.rma(summary.rma(model)),4),
@@ -413,6 +415,8 @@ rma.sum <- function(model) {
                             round(weights(model),3))
             names(sumList) <- c("summary.rma","coef.summary","anova.rma","weights")
             print(sumList)
+            if(class(model)[1] == "rma.uni") {plot.rma.uni(model)
+            }
 }
 
   #Function 'rma.uni' used to fit fixed- and mixed-effects models via linear models in metafor
@@ -426,19 +430,30 @@ randomboot <- rma.uni(yi=R2.dif, sei=SE.boot.pooled, data=R2.sum, method="REML")
 mixedboot <- rma.uni(yi=R2.dif~Stream, sei=SE.boot.pooled, data=R2.sum, method="REML")
   rma.sum(mixedboot)
   ##yi can be written as formula (yi ~ mod1 + mod2 + mod3), which will override any 'mods'
-
 ```
 
-```{r Test with mock dataset in metafor, echo=T, tidy=T}
-mock.uni <- rma.uni(yi = R2dif~Fixed, sei = R2dif_SE, data = mock)
-  rma.sum(mock.uni)
+####<span style="color:red">*Mock dataset*</span>
+```{r Test with mock dataset in rma.uni and rma.mv, echo=T, tidy=T}
+fixedmock <- rma.uni(yi=R2dif, sei=R2dif_SE, data=mock, method="FE")
+  rma.sum(fixedmock)
 
-mock.mv <- rma.mv(R2dif~Fixed, R2dif_SE^2, random= ~1|Study, data=mock)
-  rma.sum(mock.mv)
+randommock <- rma.uni(yi=R2dif, sei=R2dif_SE, data=mock, method="REML")    
+  rma.sum(randommock)
+
+mixedmock.uni <- rma.uni(yi=R2dif~Fixed, sei=R2dif_SE, data=mock)
+  rma.sum(mixedmock.uni)
+
+mixedmock.mv <- rma.mv(yi=R2dif~Fixed, V=R2dif_SE^2, random= ~1|Study, data=mock) #Assuming V can be populated with SE^2
+  rma.sum(mixedmock.mv)
+
+  #Can't get the $weights to equal wi=1/se (fixed) or wi=1/se+tau^2 (random) using se or se^2
 ```
 
-####*Calculating weighted linear regressions with lme() based on solution found on* [Stats Exchange](https://stats.stackexchange.com/questions/70425/weights-argument-in-lm-and-lme-very-different-in-r-am-i-using-them-correctly)
-```{r Test of weighted linear regression with lme4, echo=T, tidy=T}
-mock.lme <- lme(R2dif~Fixed, random= ~1|Study, data=mock, weights= ~I(1/R2dif_SE))
+#####*Calculating weighted linear regressions with lme() based on solution found on* [Stats Exchange](https://stats.stackexchange.com/questions/70425/weights-argument-in-lm-and-lme-very-different-in-r-am-i-using-them-correctly)
+```{r Test of weighted linear regression with lme() using mock dataset, echo=T, tidy=T}
+mock.lme <- lme(R2dif~Fixed, data=mock, random= ~1|Study,  weights= ~I(1/R2dif_SE))
 summary(mock.lme)
+coef(mock.lme)
+ranef(mock.lme) #Extract random effects
+fixef(mock.lme) #Extract fixed effects
 ```
